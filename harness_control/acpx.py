@@ -89,6 +89,8 @@ def build_acpx_argv(
     if action == "prompt":
         if not (prompt or "").strip():
             raise ValueError("prompt must not be empty")
+        if spec.command:
+            return [*argv, "prompt", "-s", str(session), str(prompt)]
         return [*argv, "-s", str(session), "prompt", str(prompt)]
     if action == "status":
         return [*argv, "status", "-s", str(session)]

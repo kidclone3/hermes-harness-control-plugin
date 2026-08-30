@@ -70,6 +70,27 @@ def test_builds_custom_agent_command_without_shell(tmp_path: Path) -> None:
     ]
 
 
+def test_places_custom_agent_prompt_options_after_subcommand(tmp_path: Path) -> None:
+    spec = HarnessSpec(name="omp", command="omp acp")
+
+    argv = build_acpx_argv(
+        acpx_argv=("acpx",),
+        spec=spec,
+        cwd=tmp_path,
+        permission_mode="approve_reads",
+        action="prompt",
+        session="review",
+        prompt="inspect the repository",
+    )
+
+    assert argv[-4:] == [
+        "prompt",
+        "-s",
+        "review",
+        "inspect the repository",
+    ]
+
+
 @pytest.mark.parametrize("permission_mode", ["unknown", "", "approve-everything"])
 def test_rejects_unknown_permission_mode(tmp_path: Path, permission_mode: str) -> None:
     with pytest.raises(ValueError, match="permission_mode"):
