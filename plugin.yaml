@@ -1,0 +1,32 @@
+name: harness-control
+version: 0.1.0
+manifest_version: 2
+api_version: 1
+description: Production Hermes tools for controlling ACP coding harnesses through ACPX
+license: MIT
+author: Duy Bui
+tags: [acp, acpx, coding-agents, harnesses, orchestration]
+provides_tools:
+  - harness_list
+  - harness_start
+  - harness_prompt
+  - harness_status
+  - harness_events
+  - harness_cancel
+  - harness_close
+config_schema:
+  acpx_argv:
+    type: list
+    default: [npx, -y, "acpx@0.13.2"]
+    description: Executable argv prefix used to launch the pinned ACPX runtime without a shell
+  allowed_roots:
+    type: list
+    default: []
+    description: Absolute parent directories containing Git worktrees the plugin may access
+  harnesses:
+    type: dict
+    default:
+      codex: {agent: codex, permission_mode: approve_reads}
+      pi: {agent: pi, permission_mode: approve_reads}
+      omp: {command: "omp acp", permission_mode: approve_reads}
+    description: Named ACPX agents and operator-owned permission modes
