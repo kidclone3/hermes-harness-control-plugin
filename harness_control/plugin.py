@@ -11,8 +11,9 @@ from .controller import HarnessController
 from .schemas import ALL_SCHEMAS
 from .workspace import WorkspacePolicy
 
-DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.13.2"]
+DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.15.1"]
 DEFAULT_HARNESSES: dict[str, dict[str, str]] = {
+    "claude": {"agent": "claude", "permission_mode": "approve_reads"},
     "codex": {"agent": "codex", "permission_mode": "approve_reads"},
     "pi": {"agent": "pi", "permission_mode": "approve_reads"},
     "omp": {"command": "omp acp", "permission_mode": "approve_reads"},

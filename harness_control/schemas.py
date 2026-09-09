@@ -3,7 +3,7 @@ from __future__ import annotations
 _COMMON_TARGET_PROPERTIES = {
     "harness": {
         "type": "string",
-        "description": "Configured harness name, such as codex, pi, or omp.",
+        "description": "Configured harness name, such as claude, codex, pi, or omp.",
     },
     "cwd": {
         "type": "string",

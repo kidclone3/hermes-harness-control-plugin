@@ -6,7 +6,7 @@ Hermes remains the orchestrator. ACPX owns ACP framing, adapter launch, named se
 
 ## Status
 
-Version **0.1.0** is the production transition from the validated spike. It targets stock Hermes native plugins and ACPX **0.13.2** (the current npm `latest` version when verified on 2026-08-30).
+Version **0.1.0** is the production transition from the validated spike. It targets stock Hermes native plugins and ACPX **0.15.1** (the current npm `latest` version when verified on 2026-09-08).
 
 The plugin has no separately administered daemon. It launches ACPX directly with `subprocess.Popen(..., shell=False)`.
 
@@ -24,6 +24,7 @@ The plugin has no separately administered daemon. It launches ACPX directly with
 
 Defaults:
 
+- `claude` -> ACPX built-in `claude` adapter for Claude Code
 - `codex` -> ACPX built-in `codex`
 - `pi` -> ACPX built-in `pi`
 - `omp` -> custom ACP server command `omp acp`
@@ -57,7 +58,7 @@ With no `allowed_roots` configured, all workspace operations fail closed.
 The default runtime is pinned:
 
 ```text
-npx -y acpx@0.13.2
+npx -y acpx@0.15.1
 ```
 
 ## Install
@@ -99,7 +100,7 @@ Configure named harnesses and their operator-owned permission modes:
 ```bash
 hermes config set --force \
   plugins.entries.harness-control.settings.harnesses \
-  '{"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
+  '{"claude":{"agent":"claude","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
 ```
 
 Supported permission modes:
@@ -162,7 +163,7 @@ See [docs/prior-art.md](docs/prior-art.md) for the existing-plugin search and de
 ## Current limits
 
 - Hermes's approval gate authorizes one unrestricted ACPX turn as a unit; it does not bridge each inner ACP permission request back into Hermes.
-- Live Codex was exercised by the spike. Pi and OMP adapter lifecycle was exercised, but their full edit/command/cancel/resume matrix still requires live conformance runs.
+- Live Codex was exercised by the spike. Claude Code, Pi, and OMP adapter lifecycle was exercised, but their full edit/command/cancel/resume matrix still requires live conformance runs.
 - POSIX/WSL process-group cleanup is covered. Native Windows process-tree cleanup is not yet live-verified.
 - Events remain raw ACPX JSON. Stable cross-harness event normalization is deferred.
 - This repository has no public remote yet, so immutable Git-install verification must wait until it is published.

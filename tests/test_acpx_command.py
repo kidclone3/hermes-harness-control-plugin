@@ -9,7 +9,7 @@ def test_builds_fail_closed_prompt_command_for_builtin_harness(tmp_path: Path) -
     spec = HarnessSpec(name="codex", agent="codex")
 
     argv = build_acpx_argv(
-        acpx_argv=("npx", "-y", "acpx@0.13.2"),
+        acpx_argv=("npx", "-y", "acpx@0.15.1"),
         spec=spec,
         cwd=tmp_path,
         permission_mode="approve_reads",
@@ -21,7 +21,7 @@ def test_builds_fail_closed_prompt_command_for_builtin_harness(tmp_path: Path) -
     assert argv == [
         "npx",
         "-y",
-        "acpx@0.13.2",
+        "acpx@0.15.1",
         "--cwd",
         str(tmp_path.resolve()),
         "--format",

@@ -76,7 +76,7 @@ def test_registration_rejects_invalid_operator_permission_mode() -> None:
         register(ctx)
 
 
-def test_harness_list_returns_default_codex_pi_and_omp_profiles() -> None:
+def test_harness_list_returns_default_claude_codex_pi_and_omp_profiles() -> None:
     async def exercise() -> None:
         ctx = FakeContext()
         register(ctx)
@@ -86,10 +86,18 @@ def test_harness_list_returns_default_codex_pi_and_omp_profiles() -> None:
 
         assert payload["success"] is True
         assert [item["name"] for item in payload["harnesses"]] == [
+            "claude",
             "codex",
             "omp",
             "pi",
         ]
+        assert next(
+            item for item in payload["harnesses"] if item["name"] == "claude"
+        ) == {
+            "name": "claude",
+            "kind": "builtin",
+            "selector": "claude",
+        }
         assert next(item for item in payload["harnesses"] if item["name"] == "omp") == {
             "name": "omp",
             "kind": "custom",
@@ -98,6 +106,7 @@ def test_harness_list_returns_default_codex_pi_and_omp_profiles() -> None:
         assert payload["policy"] == {
             "allowed_roots": [],
             "permission_modes": {
+                "claude": "approve_reads",
                 "codex": "approve_reads",
                 "omp": "approve_reads",
                 "pi": "approve_reads",
