@@ -103,6 +103,8 @@ hermes config set --force \
   '{"claude":{"command":"npx -y @agentclientprotocol/claude-agent-acp@0.81.2","model":"claude-opus-5-5","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
 ```
 
+Existing installations with an explicit `harnesses` mapping **do not inherit new defaults**. Migrate the `claude` entry to the pinned command and model while preserving your existing permission modes and other harness entries. Also update an explicit `acpx_argv` override to `acpx@0.19.3`. A running Hermes process must restart before it loads the changed plugin code; configuration alone is not proof of the active process version.
+
 Supported permission modes:
 
 - `deny_all`
