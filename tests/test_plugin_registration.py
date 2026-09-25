@@ -76,6 +76,22 @@ def test_registration_rejects_invalid_operator_permission_mode() -> None:
         register(ctx)
 
 
+@pytest.mark.parametrize("model", ["", "  ", 42, " claude-opus-5-5 "])
+def test_registration_rejects_invalid_operator_model(model: Any) -> None:
+    ctx = FakeContext({"harnesses": {"claude": {"agent": "claude", "model": model}}})
+    with pytest.raises(ValueError, match="model"):
+        register(ctx)
+
+
+def test_legacy_harness_config_does_not_silently_gain_model() -> None:
+    ctx = FakeContext({"harnesses": {"claude": {"agent": "claude"}}})
+    with patch("harness_control.plugin.HarnessController") as controller_type:
+        register(ctx)
+    assert controller_type.call_args.kwargs["harnesses"] == {
+        "claude": {"agent": "claude"}
+    }
+
+
 def test_harness_list_returns_default_claude_codex_pi_and_omp_profiles() -> None:
     async def exercise() -> None:
         ctx = FakeContext()
@@ -95,8 +111,8 @@ def test_harness_list_returns_default_claude_codex_pi_and_omp_profiles() -> None
             item for item in payload["harnesses"] if item["name"] == "claude"
         ) == {
             "name": "claude",
-            "kind": "builtin",
-            "selector": "claude",
+            "kind": "custom",
+            "selector": "npx -y @agentclientprotocol/claude-agent-acp@0.81.2",
         }
         assert next(item for item in payload["harnesses"] if item["name"] == "omp") == {
             "name": "omp",

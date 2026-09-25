@@ -44,6 +44,32 @@ print(json.dumps({"argv": sys.argv[1:], "acpxRecordId": "record-1"}))
     asyncio.run(exercise())
 
 
+def test_configured_claude_adapter_and_model_reach_control_process(tmp_path: Path) -> None:
+    fake_acpx = tmp_path / "fake_control.py"
+    fake_acpx.write_text(
+        'import json, sys\nprint(json.dumps({"argv": sys.argv[1:]}))', encoding="utf-8"
+    )
+    adapter = "npx -y @agentclientprotocol/claude-agent-acp@0.81.2"
+
+    async def exercise() -> None:
+        controller = HarnessController(
+            acpx_argv=(sys.executable, str(fake_acpx)),
+            harnesses={"claude": {"command": adapter, "model": "claude-opus-5-5"}},
+        )
+        result = await controller.start(
+            harness="claude", cwd=tmp_path, session="review",
+            permission_mode="deny_all", fresh=False,
+        )
+        assert result["result"]["argv"] == [
+            "--cwd", str(tmp_path.resolve()), "--format", "json", "--json-strict",
+            "--model", "claude-opus-5-5", "--deny-all",
+            "--non-interactive-permissions", "fail", "--agent", adapter,
+            "sessions", "ensure", "--name", "review",
+        ]
+
+    asyncio.run(exercise())
+
+
 def test_control_failure_returns_sanitized_diagnostic(tmp_path: Path) -> None:
     fake_acpx = tmp_path / "fake_failure.py"
     fake_acpx.write_text(

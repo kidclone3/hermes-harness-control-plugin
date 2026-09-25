@@ -17,7 +17,7 @@ provides_tools:
 config_schema:
   acpx_argv:
     type: list
-    default: [npx, -y, "acpx@0.15.1"]
+    default: [npx, -y, "acpx@0.19.3"]
     description: Executable argv prefix used to launch the pinned ACPX runtime without a shell
   allowed_roots:
     type: list
@@ -26,7 +26,7 @@ config_schema:
   harnesses:
     type: dict
     default:
-      claude: {agent: claude, permission_mode: approve_reads}
+      claude: {command: "npx -y @agentclientprotocol/claude-agent-acp@0.81.2", model: claude-opus-5-5, permission_mode: approve_reads}
       codex: {agent: codex, permission_mode: approve_reads}
       pi: {agent: pi, permission_mode: approve_reads}
       omp: {command: "omp acp", permission_mode: approve_reads}

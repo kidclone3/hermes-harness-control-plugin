@@ -26,12 +26,15 @@ class HarnessSpec:
     name: str
     agent: str | None = None
     command: str | None = None
+    model: str | None = None
 
     def __post_init__(self) -> None:
         if not self.name.strip():
             raise ValueError("harness name must not be empty")
         if bool(self.agent) == bool(self.command):
             raise ValueError("exactly one of agent or command is required")
+        if self.model is not None and (not self.model.strip() or self.model != self.model.strip()):
+            raise ValueError("model must be a non-empty model id without surrounding whitespace")
 
     def selector_argv(self) -> list[str]:
         if self.agent:
@@ -75,6 +78,7 @@ def build_acpx_argv(
         "--format",
         "json",
         "--json-strict",
+        *(["--model", spec.model] if spec.model else []),
         permission_flag,
         "--non-interactive-permissions",
         "fail",

@@ -11,9 +11,13 @@ from .controller import HarnessController
 from .schemas import ALL_SCHEMAS
 from .workspace import WorkspacePolicy
 
-DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.15.1"]
+DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.19.3"]
 DEFAULT_HARNESSES: dict[str, dict[str, str]] = {
-    "claude": {"agent": "claude", "permission_mode": "approve_reads"},
+    "claude": {
+        "command": "npx -y @agentclientprotocol/claude-agent-acp@0.81.2",
+        "model": "claude-opus-5-5",
+        "permission_mode": "approve_reads",
+    },
     "codex": {"agent": "codex", "permission_mode": "approve_reads"},
     "pi": {"agent": "pi", "permission_mode": "approve_reads"},
     "omp": {"command": "omp acp", "permission_mode": "approve_reads"},
@@ -258,6 +262,10 @@ def _load_harnesses(raw: Any) -> dict[str, dict[str, Any]]:
         ):
             raise ValueError("each harness must be a named mapping")
         result[name] = dict(value)
+        if "model" in value:
+            model = value["model"]
+            if not isinstance(model, str) or not model.strip() or model != model.strip():
+                raise ValueError(f"harness {name!r} model must be a non-empty model id")
     for name in result:
         _configured_permission_mode(result, name)
     return result

@@ -96,6 +96,7 @@ class HarnessController:
                 name=name,
                 agent=_optional_string(value.get("agent")),
                 command=_optional_string(value.get("command")),
+                model=_optional_string(value.get("model")),
             )
             for name, value in harnesses.items()
         }
