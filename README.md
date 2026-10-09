@@ -6,7 +6,7 @@ Hermes remains the orchestrator. ACPX owns ACP framing, adapter launch, named se
 
 ## Status
 
-Version **0.1.0** targets stock Hermes native plugins and ACPX **0.19.3** (npm `latest` when checked on 2026-09-25).
+Version **0.1.0** targets stock Hermes native plugins and ACPX **0.19.4** (npm `latest` when checked on 2026-10-09).
 
 The plugin has no separately administered daemon. It launches ACPX directly with `subprocess.Popen(..., shell=False)`.
 
@@ -24,7 +24,7 @@ The plugin has no separately administered daemon. It launches ACPX directly with
 
 Defaults:
 
-- `claude` -> `@agentclientprotocol/claude-agent-acp@0.81.2` via ACPX, pinned to `claude-opus-5-5`. The ACPX built-in adapter resolved an older cached `0.76.0` with Claude Code 2.1.257, which cannot run Opus 5.5.
+- `claude` -> `@agentclientprotocol/claude-agent-acp@0.88.0` via ACPX, pinned to `claude-opus-5-5`. The ACPX built-in adapter resolved an older cached `0.76.0` with Claude Code 2.1.257, which cannot run Opus 5.5.
 - `codex` -> ACPX built-in `codex`
 - `pi` -> ACPX built-in `pi`
 - `omp` -> custom ACP server command `omp acp`
@@ -58,7 +58,7 @@ With no `allowed_roots` configured, all workspace operations fail closed.
 The default runtime is pinned:
 
 ```text
-npx -y acpx@0.19.3
+npx -y acpx@0.19.4
 ```
 
 ## Install
@@ -100,10 +100,10 @@ Configure named harnesses and their operator-owned permission modes:
 ```bash
 hermes config set --force \
   plugins.entries.harness-control.settings.harnesses \
-  '{"claude":{"command":"npx -y @agentclientprotocol/claude-agent-acp@0.81.2","model":"claude-opus-5-5","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
+  '{"claude":{"command":"npx -y @agentclientprotocol/claude-agent-acp@0.88.0","model":"claude-opus-5-5","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
 ```
 
-Existing installations with an explicit `harnesses` mapping **do not inherit new defaults**. Migrate the `claude` entry to the pinned command and model while preserving your existing permission modes and other harness entries. Also update an explicit `acpx_argv` override to `acpx@0.19.3`. A running Hermes process must restart before it loads the changed plugin code; configuration alone is not proof of the active process version.
+Existing installations with an explicit `harnesses` mapping **do not inherit new defaults**. Migrate the `claude` entry to the pinned command and model while preserving your existing permission modes and other harness entries. Also update an explicit `acpx_argv` override to `acpx@0.19.4`. A running Hermes process must restart before it loads the changed plugin code; configuration alone is not proof of the active process version.
 
 Supported permission modes:
 
