@@ -49,7 +49,7 @@ def test_configured_claude_adapter_and_model_reach_control_process(tmp_path: Pat
     fake_acpx.write_text(
         'import json, sys\nprint(json.dumps({"argv": sys.argv[1:]}))', encoding="utf-8"
     )
-    adapter = "npx -y @agentclientprotocol/claude-agent-acp@0.88.0"
+    adapter = "npx -y @agentclientprotocol/claude-agent-acp@0.99.1"
 
     async def exercise() -> None:
         controller = HarnessController(

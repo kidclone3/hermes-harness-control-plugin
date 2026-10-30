@@ -1,20 +1,26 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import importlib
 import json
+import logging
 from collections.abc import Awaitable, Callable, Mapping
 from pathlib import Path
 from typing import Any, cast
 
 from .acpx import PermissionMode
 from .controller import HarnessController
+from .progress import ProgressManager, start_notice
 from .schemas import ALL_SCHEMAS
 from .workspace import WorkspacePolicy
 
-DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.19.4"]
+logger = logging.getLogger(__name__)
+
+DEFAULT_ACPX_ARGV = ["npx", "-y", "acpx@0.21.1"]
 DEFAULT_HARNESSES: dict[str, dict[str, str]] = {
     "claude": {
-        "command": "npx -y @agentclientprotocol/claude-agent-acp@0.88.0",
+        "command": "npx -y @agentclientprotocol/claude-agent-acp@0.99.1",
         "model": "claude-opus-5-5",
         "permission_mode": "approve_reads",
     },
@@ -38,6 +44,7 @@ def register(ctx: Any) -> None:
         harnesses=harnesses,
         data_dir=ctx.state.data_dir,
     )
+    progress = ProgressManager(controller, ctx)
 
     async def harness_list(args: dict[str, Any], **kwargs: Any) -> str:
         del args, kwargs
@@ -93,6 +100,8 @@ def register(ctx: Any) -> None:
                             "error": approval.get("message") or "approval denied",
                         }
                     )
+            session_key = _current_session_key()
+            surface = _session_surface(ctx)
             result = await controller.prompt(
                 harness=harness,
                 cwd=cwd,
@@ -100,6 +109,26 @@ def register(ctx: Any) -> None:
                 prompt=prompt,
                 permission_mode=cast(PermissionMode, permission_mode),
             )
+            run_id = result.get("run_id")
+            if isinstance(run_id, str) and run_id and progress.admit_delivery():
+                message = await _post_progress_notice(
+                    ctx, start_notice(harness=harness, run_id=run_id)
+                )
+                if message is not None or session_key:
+                    try:
+                        progress.start(
+                            run_id=run_id,
+                            harness=harness,
+                            session_key=session_key,
+                            surface=surface,
+                            message=message,
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "progress watcher setup failed run=%s category=%s",
+                            run_id[:8],
+                            type(exc).__name__,
+                        )
             return _json({"success": True, **result})
         except (OSError, TypeError, ValueError) as exc:
             return _json({"success": False, "error": f"{type(exc).__name__}: {exc}"})
@@ -168,7 +197,49 @@ def register(ctx: Any) -> None:
             is_async=True,
         )
 
-    ctx.on_unload(controller.close_now)
+    def unload() -> None:
+        progress.close()
+        controller.close_now()
+
+    ctx.on_unload(unload)
+
+
+async def _post_progress_notice(ctx: Any, text: str) -> Any | None:
+    post = getattr(ctx, "post_message", None)
+    if not callable(post):
+        return None
+    try:
+        return await asyncio.to_thread(post, text)
+    except Exception as exc:
+        logger.warning(
+            "progress notice post failed category=%s",
+            type(exc).__name__,
+        )
+        return None
+
+
+def _current_session_key() -> str:
+    try:
+        session = importlib.import_module("gateway.session_context")
+        value = session.bound_session_key()
+    except Exception:
+        return ""
+    return value.strip() if isinstance(value, str) else ""
+
+
+def _session_surface(ctx: Any) -> str:
+    surface = getattr(ctx, "session_surface", None)
+    if not callable(surface):
+        return ""
+    try:
+        value = surface()
+    except Exception as exc:
+        logger.warning(
+            "progress surface capture failed category=%s",
+            type(exc).__name__,
+        )
+        return ""
+    return value if isinstance(value, str) else ""
 
 
 async def _call(

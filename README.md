@@ -6,7 +6,7 @@ Hermes remains the orchestrator. ACPX owns ACP framing, adapter launch, named se
 
 ## Status
 
-Version **0.1.0** targets stock Hermes native plugins and ACPX **0.19.4** (npm `latest` when checked on 2026-10-09).
+Version **0.1.0** targets stock Hermes native plugins and ACPX **0.21.1** (npm `latest` when checked on 2026-10-30).
 
 The plugin has no separately administered daemon. It launches ACPX directly with `subprocess.Popen(..., shell=False)`.
 
@@ -22,9 +22,39 @@ The plugin has no separately administered daemon. It launches ACPX directly with
 | `harness_cancel` | Request cooperative ACP cancellation. |
 | `harness_close` | Soft-close the named ACPX session. |
 
+## Live prompt progress
+
+`harness_prompt` still returns its `run_id` immediately after ACPX launches. When
+the host exposes conversation notification APIs, the plugin also posts a start
+notice bound to that exact calling conversation and watches the run's existing
+local `harness_events` buffer on a plugin-owned daemon thread.
+
+- The watcher polls about every two seconds and edits the captured notice at
+  most once every ten seconds. Classic CLI receives only the start and final
+  notice because each edit becomes a queued line there.
+- Notices contain only fixed categories derived from structured ACP tool
+  events, the harness and short run id, elapsed time, last-event age, and final
+  return-code/controller-error category. Raw tool arguments, output, reasoning,
+  arbitrary titles, and stderr are never copied into a notice or wake-up
+  prompt.
+- A terminal run is fully drained before the final edit. The plugin then makes
+  one completion `inject_message` attempt using the parent session key captured
+  by the tool call. An empty key is never guessed. Refused or unavailable host
+  delivery remains fail-open and does not change the `harness_prompt` result.
+  A successful post handle does not prove display delivery; an injection result
+  of `True` means accepted for asynchronous dispatch, not processed.
+- Return code 0 means only that the harness process ended; the notice says
+  review is pending rather than claiming implementation success.
+
+Completion wake-up uses Hermes's existing `allow_gateway_injection` permission;
+the plugin does not grant or change it. Watchers are in-process only: unload
+admits no new notice edits or completion injections and bounds watcher joins,
+although an already-admitted host operation may settle later. Watchers are not
+recovered after a plugin or Hermes restart.
+
 Defaults:
 
-- `claude` -> `@agentclientprotocol/claude-agent-acp@0.88.0` via ACPX, pinned to `claude-opus-5-5`. The ACPX built-in adapter resolved an older cached `0.76.0` with Claude Code 2.1.257, which cannot run Opus 5.5.
+- `claude` -> `@agentclientprotocol/claude-agent-acp@0.99.1` via ACPX, pinned to `claude-opus-5-5`. The ACPX built-in adapter resolved an older cached `0.76.0` with Claude Code 2.1.257, which cannot run Opus 5.5.
 - `codex` -> ACPX built-in `codex`
 - `pi` -> ACPX built-in `pi`
 - `omp` -> custom ACP server command `omp acp`
@@ -58,7 +88,7 @@ With no `allowed_roots` configured, all workspace operations fail closed.
 The default runtime is pinned:
 
 ```text
-npx -y acpx@0.19.4
+npx -y acpx@0.21.1
 ```
 
 ## Install
@@ -100,10 +130,10 @@ Configure named harnesses and their operator-owned permission modes:
 ```bash
 hermes config set --force \
   plugins.entries.harness-control.settings.harnesses \
-  '{"claude":{"command":"npx -y @agentclientprotocol/claude-agent-acp@0.88.0","model":"claude-opus-5-5","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
+  '{"claude":{"command":"npx -y @agentclientprotocol/claude-agent-acp@0.99.1","model":"claude-opus-5-5","permission_mode":"approve_reads"},"codex":{"agent":"codex","permission_mode":"approve_reads"},"pi":{"agent":"pi","permission_mode":"approve_reads"},"omp":{"command":"omp acp","permission_mode":"approve_reads"}}'
 ```
 
-Existing installations with an explicit `harnesses` mapping **do not inherit new defaults**. Migrate the `claude` entry to the pinned command and model while preserving your existing permission modes and other harness entries. Also update an explicit `acpx_argv` override to `acpx@0.19.4`. A running Hermes process must restart before it loads the changed plugin code; configuration alone is not proof of the active process version.
+Existing installations with an explicit `harnesses` mapping **do not inherit new defaults**. Migrate the `claude` entry to the pinned command and model while preserving your existing permission modes and other harness entries. Also update an explicit `acpx_argv` override to `acpx@0.21.1`. A running Hermes process must restart before it loads the changed plugin code; configuration alone is not proof of the active process version.
 
 Supported permission modes:
 

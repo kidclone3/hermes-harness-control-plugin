@@ -112,7 +112,7 @@ def test_harness_list_returns_default_claude_codex_pi_and_omp_profiles() -> None
         ) == {
             "name": "claude",
             "kind": "custom",
-            "selector": "npx -y @agentclientprotocol/claude-agent-acp@0.88.0",
+            "selector": "npx -y @agentclientprotocol/claude-agent-acp@0.99.1",
         }
         assert next(item for item in payload["harnesses"] if item["name"] == "omp") == {
             "name": "omp",

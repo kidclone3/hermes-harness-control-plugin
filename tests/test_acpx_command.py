@@ -9,7 +9,7 @@ def test_builds_fail_closed_prompt_command_for_builtin_harness(tmp_path: Path) -
     spec = HarnessSpec(name="codex", agent="codex")
 
     argv = build_acpx_argv(
-        acpx_argv=("npx", "-y", "acpx@0.19.4"),
+        acpx_argv=("npx", "-y", "acpx@0.21.1"),
         spec=spec,
         cwd=tmp_path,
         permission_mode="approve_reads",
@@ -21,7 +21,7 @@ def test_builds_fail_closed_prompt_command_for_builtin_harness(tmp_path: Path) -
     assert argv == [
         "npx",
         "-y",
-        "acpx@0.19.4",
+        "acpx@0.21.1",
         "--cwd",
         str(tmp_path.resolve()),
         "--format",
@@ -40,7 +40,7 @@ def test_builds_fail_closed_prompt_command_for_builtin_harness(tmp_path: Path) -
 
 def test_claude_model_is_operator_owned_and_forwarded_to_acpx(tmp_path: Path) -> None:
     argv = build_acpx_argv(
-        acpx_argv=("npx", "-y", "acpx@0.19.4"),
+        acpx_argv=("npx", "-y", "acpx@0.21.1"),
         spec=HarnessSpec(name="claude", agent="claude", model="claude-opus-5-5"),
         cwd=tmp_path,
         permission_mode="approve_reads",
@@ -53,9 +53,9 @@ def test_claude_model_is_operator_owned_and_forwarded_to_acpx(tmp_path: Path) ->
 
 
 def test_claude_custom_adapter_keeps_session_option_after_prompt(tmp_path: Path) -> None:
-    adapter = "npx -y @agentclientprotocol/claude-agent-acp@0.88.0"
+    adapter = "npx -y @agentclientprotocol/claude-agent-acp@0.99.1"
     argv = build_acpx_argv(
-        acpx_argv=("npx", "-y", "acpx@0.19.4"),
+        acpx_argv=("npx", "-y", "acpx@0.21.1"),
         spec=HarnessSpec(name="claude", command=adapter, model="claude-opus-5-5"),
         cwd=tmp_path,
         permission_mode="approve_reads",
